@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package recyclingsupport;
+option java_multiple_files = true;
+
+message ChatMessage {
+  string sender = 1;      // Nombre del remitente (por ejemplo, "client" o "SupportAgent")
+  string message = 2;     // Contenido del mensaje
+  string timestamp = 3;   // Marca de tiempo del mensaje en formato ISO (por ejemplo, "2025-08-01T12:00:00Z")
+}
+
+// Servicio gRPC para el soporte de reciclaje inteligente
+service RecyclingSupportService {
+  // Comunicación bidireccional por streaming
+  rpc Chat (stream ChatMessage) returns (stream ChatMessage);
+}
+

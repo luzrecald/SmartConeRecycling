@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package wasteanalytics;
+option java_multiple_files = true;
+
+service WasteAnalyticsService {
+  rpc SubmitDailyWaste (stream WasteRecord) returns (DailyReport);
+}
+
+message WasteRecord {
+  string material = 1;    // "plastic", "cardboard"
+  string condition = 2;   // "good", "damaged"
+  string size = 3;        // "small", "large"
+  string date = 4;        // e.g., "2025-07-06"
+}
+
+message DailyReport {
+  DailySummary dailySummary = 1;
+  RecyclingBenefits recyclingBenefits = 2;
+}
+
+message DailySummary {
+  int32 totalWaste = 1;
+  int32 eligibleForSale = 2;
+  int32 recyclable = 3;
+  int32 nonRecoverable = 4;
+}
+
+message RecyclingBenefits {
+  int32 reusedBySoltex = 1;
+  int32 recycledCones = 2;
+  string estimatedSavings = 3;           // e.g., "14000 gs"
+  string wasteDivertedFromLandfill = 4;  // e.g., "75%"
+  string tip = 5;
+}
+

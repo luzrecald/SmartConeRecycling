@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package coneclassification;
+option java_multiple_files = true;
+
+service ConeClassificationService {
+  rpc ClassifyCone (ConeInfo) returns (Suggestion);
+}
+
+message ConeInfo {
+  string type = 1;      // "plastic" or "cardboard"
+  string size = 2;      // "small" or "large"
+  string condition = 3; // "good" or "damaged"
+}
+
+message Suggestion {
+  string suggestion = 1; // e.g., "Sell to Soltex", "Recycle", "Discard"
+}
+

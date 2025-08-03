@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package conepurchase;
+option java_multiple_files = true;
+
+service ConePurchaseService {
+  rpc RequestConeSale (ConeSaleRequest) returns (stream ConeSaleResponse);
+}
+
+message ConeSaleRequest {
+  int32 quantity = 1;
+  string location = 2; // Client zone
+}
+
+message ConeSaleResponse {
+  string messageType = 1;  // "price", "logisticStatus", "pickupOption", "note"
+  string message = 2;      // Value depends on messageType
+  string day = 3;          // Optional: only present when messageType is "pickupOption"
+  string timeslot = 4;     // Optional: for pickup option
+}
