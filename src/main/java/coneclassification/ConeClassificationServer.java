@@ -15,6 +15,7 @@ public class ConeClassificationServer extends ConeClassificationServiceImplBase 
     private static final Logger logger = Logger.getLogger(ConeClassificationServer.class.getName());
 
     public static void main(String[] args) {
+        
         // Create the server implementation
         ConeClassificationServer serviceImpl = new ConeClassificationServer();
         int port = 50053;
@@ -22,7 +23,7 @@ public class ConeClassificationServer extends ConeClassificationServiceImplBase 
         try {
             // Start the gRPC server on the specified port
             Server server = ServerBuilder.forPort(port)
-                    .addService(ServerInterceptors.intercept(serviceImpl, new AuthorizationServerInterceptor()))// Add an authentication check
+                    .addService(ServerInterceptors.intercept(serviceImpl, new AuthorizationServerInterceptor()))
                     .build()
                     .start();
 
@@ -34,9 +35,9 @@ public class ConeClassificationServer extends ConeClassificationServiceImplBase 
             ConeClassificationServiceRegistration.getInstance()
                 .registerService("_grpc._tcp.local.", "ConeClassifier", port, "Cone Classification Service");
 
-            // Keep the server running
-            server.awaitTermination();
-
+           server.awaitTermination();
+           
+           
         } catch (IOException | InterruptedException e) {
             e.printStackTrace(); // Show any errors if the server fails
         }

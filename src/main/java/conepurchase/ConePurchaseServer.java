@@ -65,10 +65,15 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
 
             // If the order is small (less than 100 cones), only respond with info about pickup not being available
             if (quantity < 100) {
+                 responseObserver.onNext(ConeSaleResponse.newBuilder()
+                    .setMessageType("price")
+                    .setMessage("Total: $" + (quantity * 2))
+                    .build());
                 ConeSaleResponse pickupNotAvailable = ConeSaleResponse.newBuilder()
                         .setMessageType("pickupOption")
                         .setMessage("Pickup service only available for orders of 100+ cones.")
                         .build();
+               
                 responseObserver.onNext(pickupNotAvailable);
                 responseObserver.onCompleted();
                 return;
@@ -77,7 +82,7 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
             // For large orders (100 or more), respond with full details: price, delivery, and pickup
             responseObserver.onNext(ConeSaleResponse.newBuilder()
                     .setMessageType("price")
-                    .setMessage("Total: $" + (quantity * 15))
+                    .setMessage("Total: $" + (quantity * 2))
                     .build());
 
             responseObserver.onNext(ConeSaleResponse.newBuilder()

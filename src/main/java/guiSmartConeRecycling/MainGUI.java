@@ -20,10 +20,22 @@ public class MainGUI extends javax.swing.JFrame {
      */
     public MainGUI() {
     initComponents();
-    mainTabs.setComponentAt(0, new panelClassification());
-    mainTabs.setComponentAt(1, new panelPurchase());
-    mainTabs.setComponentAt(2, new panelSupport());
-    mainTabs.setComponentAt(3, new panelWasteAnalitycs());
+            purchaseButton.addActionListener(e -> {
+              new panelPurchase().setVisible(true);
+          });
+
+          classifyButton.addActionListener(e -> {
+              new panelClassification().setVisible(true);
+          });
+
+          wasteButton.addActionListener(e -> {
+              new panelWasteAnalitycs().setVisible(true);
+          });
+
+          supportChatButton.addActionListener(e -> {
+              new panelSupport().setVisible(true);
+          });
+
 }
 
     /**
@@ -35,29 +47,77 @@ public class MainGUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        mainTabs = new javax.swing.JTabbedPane();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        purchaseButton = new javax.swing.JButton();
+        classifyButton = new javax.swing.JButton();
+        wasteButton = new javax.swing.JButton();
+        supportChatButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jLabel1.setText("SMART CONE RECYCLING");
+
+        jLabel2.setText("Please select the service you want to use");
+
+        purchaseButton.setText("Puchase cone");
+
+        classifyButton.setText("Classify your cones ");
+        classifyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                classifyButtonActionPerformed(evt);
+            }
+        });
+
+        wasteButton.setText("Waste Report");
+
+        supportChatButton.setText("Support chat");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(28, 28, 28)
-                .addComponent(mainTabs, javax.swing.GroupLayout.PREFERRED_SIZE, 766, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(93, 93, 93)
+                        .addComponent(jLabel1))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(34, 34, 34)
+                        .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 221, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(26, 26, 26)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(classifyButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(purchaseButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(wasteButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(supportChatButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                .addContainerGap(104, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(mainTabs, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(409, Short.MAX_VALUE))
+                .addGap(15, 15, 15)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(purchaseButton)
+                .addGap(18, 18, 18)
+                .addComponent(classifyButton)
+                .addGap(18, 18, 18)
+                .addComponent(wasteButton)
+                .addGap(18, 18, 18)
+                .addComponent(supportChatButton)
+                .addContainerGap(66, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void classifyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classifyButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_classifyButtonActionPerformed
 
     /**
      * @param args the command line arguments
@@ -95,6 +155,11 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTabbedPane mainTabs;
+    private javax.swing.JButton classifyButton;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JButton purchaseButton;
+    private javax.swing.JButton supportChatButton;
+    private javax.swing.JButton wasteButton;
     // End of variables declaration//GEN-END:variables
 }
