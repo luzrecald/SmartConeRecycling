@@ -9,8 +9,10 @@ import javax.jmdns.ServiceEvent;
 import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
+// This class is used to find (discover) a service on the local network
 public class RecyclingSupportServiceDiscovery {
 
+    // This class stores the service information (host and port)
     public static class ServiceDetails {
         public final String host;
         public final int port;
@@ -21,42 +23,50 @@ public class RecyclingSupportServiceDiscovery {
         }
     }
 
+    // This method tries to discover a service with the given name
     public static ServiceDetails discover(String serviceName) {
+        // This helps wait until the service is found
         final CountDownLatch latch = new CountDownLatch(1);
         final ServiceDetails[] result = new ServiceDetails[1];
 
         try {
+            // JmDNS is used for service discovery in the network
             JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
 
+            // Add a listener to look for services
             jmdns.addServiceListener("_grpc._tcp.local.", new ServiceListener() {
+
                 @Override
                 public void serviceAdded(ServiceEvent event) {
-                    jmdns.requestServiceInfo(event.getType(), event.getName());
+                    // When a service is found, request more info about it
+                    jmdns.requestServiceInfo(event.getType(), event.getName(), 1);
                 }
 
                 @Override
-                public void serviceRemoved(ServiceEvent event) {}
+                public void serviceRemoved(ServiceEvent event) {
+                    // Called if the service is removed
+                }
 
                 @Override
                 public void serviceResolved(ServiceEvent event) {
+                    // When service is fully resolved, get the info
                     ServiceInfo info = event.getInfo();
-                    if (info.getName().contains(serviceName)) {
+                    if (info.getName().equals(serviceName)) {
                         result[0] = new ServiceDetails(info.getHostAddresses()[0], info.getPort());
-                        latch.countDown();
+                        latch.countDown();  // Stop waiting
                     }
                 }
             });
 
-            if (!latch.await(5, TimeUnit.SECONDS)) {
-                System.err.println("⚠️ [JmDNS] Timeout: No service found.");
-                return null;
-            }
-
-            return result[0];
+            // Wait up to 5 seconds to find the service
+            latch.await(5, TimeUnit.SECONDS);
+            jmdns.close();  // Close the discovery
 
         } catch (IOException | InterruptedException e) {
-            System.err.println("❌ [JmDNS] Discovery failed: " + e.getMessage());
-            return null;
+            e.printStackTrace();
         }
+
+        // Return the discovered service (or null if not found)
+        return result[0];
     }
 }

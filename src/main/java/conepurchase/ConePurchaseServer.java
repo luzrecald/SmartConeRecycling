@@ -18,8 +18,9 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
         int port = 50054;
 
         try {
+            // Create and start the gRPC server on the given port
             Server server = ServerBuilder.forPort(port)
-                    // 🔐 Interceptor de autenticación
+                    // Add an authentication check for incoming requests
                     .addService(ServerInterceptors.intercept(serviceImpl, new AuthInterceptor()))
                     .build()
                     .start();
@@ -27,10 +28,11 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
             logger.info("ConePurchaseServer started on port " + port);
             System.out.println("ConePurchaseServer started on port " + port);
 
-            // Registro mDNS del servicio
+            // Register this service on the local network using mDNS
             ConePurchaseServiceRegistration.getInstance()
                     .registerService("_grpc._tcp.local.", "ConePurchase", port, "gRPC Cone Purchase Service");
 
+            // Keep the server running
             server.awaitTermination();
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -45,13 +47,15 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
             int quantity = request.getQuantity();
             String location = request.getLocation().trim();
 
-            // ✅ Validaciones realistas
+            // Check if the quantity is valid (must be more than 0)
             if (quantity <= 0) {
                 responseObserver.onError(Status.INVALID_ARGUMENT
                         .withDescription("Quantity must be greater than zero")
                         .asRuntimeException());
                 return;
             }
+
+            // Check if the location is valid (can't be empty)
             if (location.isEmpty()) {
                 responseObserver.onError(Status.INVALID_ARGUMENT
                         .withDescription("Location cannot be empty")
@@ -59,7 +63,7 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
                 return;
             }
 
-            // ✅ NUEVA LÓGICA: si quantity < 100, SOLO avisamos indisponibilidad de pickup y terminamos
+            // If the order is small (less than 100 cones), only respond with info about pickup not being available
             if (quantity < 100) {
                 ConeSaleResponse pickupNotAvailable = ConeSaleResponse.newBuilder()
                         .setMessageType("pickupOption")
@@ -67,10 +71,10 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
                         .build();
                 responseObserver.onNext(pickupNotAvailable);
                 responseObserver.onCompleted();
-                return; // 👈 Importante: no enviamos precio ni logística
+                return;
             }
 
-            // ✅ Para quantity >= 100: enviamos precio, logística y pickup programado
+            // For large orders (100 or more), respond with full details: price, delivery, and pickup
             responseObserver.onNext(ConeSaleResponse.newBuilder()
                     .setMessageType("price")
                     .setMessage("Total: $" + (quantity * 15))
@@ -88,9 +92,11 @@ public class ConePurchaseServer extends ConePurchaseServiceImplBase {
                     .setTimeslot("10:00 AM - 1:00 PM")
                     .build());
 
+            // End the stream of responses
             responseObserver.onCompleted();
 
         } catch (Exception e) {
+            // If any unexpected error happens, return a server error
             e.printStackTrace();
             responseObserver.onError(Status.INTERNAL
                     .withDescription("Server error: " + e.getMessage())

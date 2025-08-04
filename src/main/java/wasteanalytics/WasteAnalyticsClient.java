@@ -1,4 +1,4 @@
-package wasteanalytics;
+package wasteanalytics; // This file belongs to the 'wasteanalytics' package.
 
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
@@ -13,97 +13,87 @@ import java.util.concurrent.TimeUnit;
 
 public class WasteAnalyticsClient {
     public static void main(String[] args) throws Exception {
-        String service_type = "_grpc._tcp.local.";
-        String service_name = "WasteAnalytics";
 
-        // Discover the service using JmDNS
+        String service_type = "_grpc._tcp.local."; // The type of service to search for.
+        String service_name = "WasteAnalytics";    // The name of the service.
+
+        // Discover the service on the local network using JmDNS
         JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
-        ServiceInfo serviceInfo = jmdns.getServiceInfo(service_type, service_name, 5000);
+        ServiceInfo serviceInfo = jmdns.getServiceInfo(service_type, service_name, 5000); // wait up to 5 seconds
 
         if (serviceInfo == null) {
-            System.out.println("Service '" + service_name + "' not found!");
+            System.out.println("Service '" + service_name + "' not found.");
             return;
         }
 
+        // Get the IP address and port of the service
         String host = serviceInfo.getHostAddresses()[0];
         int port = serviceInfo.getPort();
 
-        // Create a gRPC channel
+        // Create a gRPC communication channel with the server
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port)
                 .usePlaintext()
                 .build();
 
-        // Create and attach metadata for authentication
+        // Create metadata for authentication
         Metadata metadata = new Metadata();
         Metadata.Key<String> authKey = Metadata.Key.of("auth-token", Metadata.ASCII_STRING_MARSHALLER);
-        metadata.put(authKey, "secreto123");  // Expected token by server
+        metadata.put(authKey, "secreto123");  // Token expected by the server
 
-        // Create base stub without timeout (yet)
+        // Create a base stub and attach the metadata
         WasteAnalyticsServiceGrpc.WasteAnalyticsServiceStub stub =
                 WasteAnalyticsServiceGrpc.newStub(channel);
-        stub = MetadataUtils.attachHeaders(stub, metadata); // Attach auth token
+        stub = MetadataUtils.attachHeaders(stub, metadata);
 
+        // Use Scanner to get user input
         Scanner scanner = new Scanner(System.in);
         List<WasteRecord> records = new ArrayList<>();
 
         System.out.println("Enter waste records. Type 'done' to finish.");
 
+        // Collect records from user
         while (true) {
-            // Validate material
             String material = "";
             while (true) {
                 System.out.print("\nMaterial (plastic/cardboard) or 'done' to finish: ");
                 material = scanner.nextLine().trim().toLowerCase();
 
-                if (material.equals("done")) {
-                    break;
-                }
+                if (material.equals("done")) break;
+                if (material.equals("plastic") || material.equals("cardboard")) break;
 
-                if (material.equals("plastic") || material.equals("cardboard")) {
-                    break;
-                }
-
-                System.out.println("\u274C Invalid material. Please enter 'plastic' or 'cardboard'.");
+                System.out.println("Invalid material. Please enter 'plastic' or 'cardboard'.");
             }
 
-            if (material.equals("done")) {
-                break;
-            }
+            if (material.equals("done")) break;
 
-            // Validate condition
             String condition = "";
             while (true) {
                 System.out.print("Condition (good/damaged): ");
                 condition = scanner.nextLine().trim().toLowerCase();
-
                 if (condition.equals("good") || condition.equals("damaged")) break;
 
-                System.out.println("\u274C Invalid condition. Please enter 'good' or 'damaged'.");
+                System.out.println("Invalid condition. Please enter 'good' or 'damaged'.");
             }
 
-            // Validate size
             String size = "";
             while (true) {
                 System.out.print("Size (small/large): ");
                 size = scanner.nextLine().trim().toLowerCase();
-
                 if (size.equals("small") || size.equals("large")) break;
 
-                System.out.println("\u274C Invalid size. Please enter 'small' or 'large'.");
+                System.out.println("Invalid size. Please enter 'small' or 'large'.");
             }
 
-            // Validate date
             String date = "";
             while (true) {
                 System.out.print("Date (format YYYY-MM-DD): ");
                 date = scanner.nextLine().trim();
-
                 if (date.matches("\\d{4}-\\d{2}-\\d{2}")) break;
 
-                System.out.println("\u274C Invalid date. Use format YYYY-MM-DD.");
+                System.out.println("Invalid date. Use format YYYY-MM-DD.");
             }
 
-            // Create and store the record
+            // Build the record and store it
             WasteRecord record = WasteRecord.newBuilder()
                     .setMaterial(material)
                     .setCondition(condition)
@@ -112,21 +102,24 @@ public class WasteAnalyticsClient {
                     .build();
 
             records.add(record);
-            System.out.println("\u2714 Record added.");
+            System.out.println("Record added.");
         }
 
+        // If no data was entered, stop
         if (records.isEmpty()) {
             System.out.println("No records to send.");
             channel.shutdown();
             return;
         }
 
-        // Prepare for receiving report
+        // Create a latch to wait for server response
         CountDownLatch latch = new CountDownLatch(1);
 
+        // Handle server responses
         StreamObserver<DailyReport> responseObserver = new StreamObserver<DailyReport>() {
             @Override
             public void onNext(DailyReport report) {
+                // Print summary from the report
                 System.out.println("\n=== Daily Summary ===");
                 System.out.println("Total Waste: " + report.getDailySummary().getTotalWaste());
                 System.out.println("Eligible for Sale: " + report.getDailySummary().getEligibleForSale());
@@ -143,7 +136,7 @@ public class WasteAnalyticsClient {
 
             @Override
             public void onError(Throwable t) {
-                System.err.println("\n\u274C Error from server:");
+                System.err.println("\nError from server:");
                 if (t instanceof StatusRuntimeException) {
                     StatusRuntimeException ex = (StatusRuntimeException) t;
                     System.err.println("Status: " + ex.getStatus());
@@ -156,23 +149,23 @@ public class WasteAnalyticsClient {
 
             @Override
             public void onCompleted() {
-                System.out.println("\n\u2705 Report completed.");
+                System.out.println("\nReport completed.");
                 latch.countDown();
             }
         };
 
-        // ✅ APLICA DEADLINE SOLO AHORA:
+        // Set a 30-second deadline for the response
         stub = stub.withDeadlineAfter(30, TimeUnit.SECONDS);
 
-        // Send all records to server
+        // Send all records to the server
         StreamObserver<WasteRecord> requestObserver = stub.submitDailyWaste(responseObserver);
         for (WasteRecord r : records) {
             requestObserver.onNext(r);
         }
         requestObserver.onCompleted();
 
-        // Wait for server response
+        // Wait for the response or timeout
         latch.await(10, TimeUnit.SECONDS);
-        channel.shutdown();
+        channel.shutdown(); // Close the connection
     }
 }
